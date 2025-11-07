@@ -31,8 +31,6 @@ void HomeMovementGenerator<Creature>::DoFinalize(Creature* owner)
     owner->ClearUnitState(UNIT_STATE_EVADE);
     if (arrived)
     {
-        // Xinef: npc run by default
-        //owner->SetWalk(true);
         owner->LoadCreaturesAddon(true);
         owner->AI()->JustReachedHome();
     }
@@ -63,7 +61,7 @@ void HomeMovementGenerator<Creature>::_setTargetLocation(Creature* owner)
     }
 
     owner->UpdateAllowedPositionZ(x, y, z);
-    init.MoveTo(x, y, z, DisableMgr::IsPathfindingEnabled(owner->FindMap()), true);
+    init.MoveTo(x, y, z, sDisableMgr->IsPathfindingEnabled(owner->FindMap()), true);
     init.SetWalk(_walk);
     init.Launch();
 

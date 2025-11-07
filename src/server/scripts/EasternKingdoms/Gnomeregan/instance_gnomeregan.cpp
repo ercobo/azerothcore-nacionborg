@@ -27,7 +27,7 @@
 class instance_gnomeregan : public InstanceMapScript
 {
 public:
-    instance_gnomeregan() : InstanceMapScript("instance_gnomeregan", 90) { }
+    instance_gnomeregan() : InstanceMapScript("instance_gnomeregan", MAP_GNOMEREGAN) { }
 
     InstanceScript* GetInstanceScript(InstanceMap* map) const override
     {
@@ -131,7 +131,7 @@ public:
         uint32 checkTimer;
         ObjectGuid playerGUID;
 
-        void SetGUID(ObjectGuid guid, int32) override
+        void SetGUID(ObjectGuid const& guid, int32) override
         {
             playerGUID = guid;
         }
@@ -146,7 +146,7 @@ public:
                 {
                     if (Player* player = ObjectAccessor::GetPlayer(*me, playerGUID))
                         player->GroupEventHappens(QUEST_A_FINE_MESS, me);
-                    me->DespawnOrUnsummon(1000);
+                    me->DespawnOrUnsummon(1s);
                 }
             }
         }

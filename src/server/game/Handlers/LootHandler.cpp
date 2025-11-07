@@ -93,7 +93,7 @@ void WorldSession::HandleAutostoreLootItemOpcode(WorldPacket& recvData)
         loot = &creature->loot;
     }
 
-    sScriptMgr->OnAfterCreatureLoot(player);
+    sScriptMgr->OnPlayerAfterCreatureLoot(player);
 
     InventoryResult msg;
     LootItem* lootItem = player->StoreLootItem(lootSlot, loot, msg);
@@ -179,7 +179,7 @@ void WorldSession::HandleLootMoneyOpcode(WorldPacket& /*recvData*/)
 
     if (loot)
     {
-        sScriptMgr->OnBeforeLootMoney(player, loot);
+        sScriptMgr->OnPlayerBeforeLootMoney(player, loot);
         loot->NotifyMoneyRemoved();
         if (shareMoney && player->GetGroup())      //item, pickpocket and players can be looted only single player
         {
@@ -206,12 +206,12 @@ void WorldSession::HandleLootMoneyOpcode(WorldPacket& /*recvData*/)
                 WorldPacket data(SMSG_LOOT_MONEY_NOTIFY, 4 + 1);
                 data << uint32(goldPerPlayer);
                 data << uint8(playersNear.size() > 1 ? 0 : 1);     // Controls the text displayed in chat. 0 is "Your share is..." and 1 is "You loot..."
-                (*i)->GetSession()->SendPacket(&data);
+                (*i)->SendDirectMessage(&data);
             }
         }
         else
         {
-            sScriptMgr->OnAfterCreatureLootMoney(player);
+            sScriptMgr->OnPlayerAfterCreatureLootMoney(player);
             player->ModifyMoney(loot->gold);
             player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_MONEY, loot->gold);
 

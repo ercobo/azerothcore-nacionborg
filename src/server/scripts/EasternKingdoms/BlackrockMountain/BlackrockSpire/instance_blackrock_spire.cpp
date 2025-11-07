@@ -39,10 +39,7 @@ enum EventIds
     EVENT_SOLAKAR_WAVE                     = 3
 };
 
-enum Timers
-{
-    TIMER_SOLAKAR_WAVE = 30000
-};
+constexpr Milliseconds TIMER_SOLAKAR_WAVE = 30s;
 
 enum SolakarWaves
 {
@@ -62,7 +59,8 @@ enum Texts
 
 MinionData const minionData[] =
 {
-    { NPC_CHROMATIC_ELITE_GUARD, DATA_GENERAL_DRAKKISATH }
+    { NPC_CHROMATIC_ELITE_GUARD, DATA_GENERAL_DRAKKISATH },
+    { 0,                         0,                      }
 };
 
 DoorData const doorData[] =
@@ -76,7 +74,7 @@ DoorData const doorData[] =
 class instance_blackrock_spire : public InstanceMapScript
 {
 public:
-    instance_blackrock_spire() : InstanceMapScript(BRSScriptName, 229) { }
+    instance_blackrock_spire() : InstanceMapScript(BRSScriptName, MAP_BLACKROCK_SPIRE) { }
 
     struct instance_blackrock_spireMapScript : public InstanceScript
     {
@@ -1048,7 +1046,7 @@ public:
                         break;
                     case EVENT_VAEL_3_DESPAWN:
                         DoCast(me, SPELL_VAELASTRASZ_SPAWN);
-                        me->DespawnOrUnsummon(1500);
+                        me->DespawnOrUnsummon(1500ms);
                         break;
                     default:
                         break;

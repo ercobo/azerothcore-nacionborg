@@ -95,7 +95,7 @@ struct boss_selin_fireheart : public BossAI
         BossAI::JustEngagedWith(who);
         ScheduleTimedEvent(2500ms, [&]{
             DoCastRandomTarget(SPELL_DRAIN_LIFE);
-        }, 10000ms);
+        }, 10s);
         ScheduleTimedEvent(2s, [&]{
             me->RemoveAuraFromStack(SPELL_MANA_RAGE_TRIGGER);
             DoCastAOE(SPELL_FEL_EXPLOSION);
@@ -161,7 +161,7 @@ struct boss_selin_fireheart : public BossAI
             if (Creature* crystal = SelectNearestCrystal(false))
             {
                 Talk(EMOTE_CRYSTAL);
-                crystal->ReplaceAllUnitFlags(UNIT_FLAG_NONE);
+                crystal->RemoveUnitFlag(UNIT_FLAG_NOT_SELECTABLE);
                 crystal->SetInCombatWithZone();
                 crystal->AI()->DoCast(me, SPELL_MANA_RAGE, true);
                 DoCast(crystal, SPELL_FEL_CRYSTAL_COSMETIC, true);

@@ -17,6 +17,7 @@
 
 #include "AccountMgr.h"
 #include "AchievementCriteriaScript.h"
+#include "AreaDefines.h"
 #include "BanMgr.h"
 #include "CreatureScript.h"
 #include "GameObjectScript.h"
@@ -265,7 +266,7 @@ public:
                     Talk(SAY_EMOTE_SURGE_OF_DARKNESS);
                     me->CastSpell(me, SPELL_SURGE_OF_DARKNESS, false);
                     events.Repeat(63s);
-                    events.DelayEvents(10000, 1);
+                    events.DelayEvents(10s, 1);
                     break;
                 case EVENT_SPELL_MARK_OF_THE_FACELESS:
                     {
@@ -311,8 +312,8 @@ public:
                                     sv->GetMotionMaster()->MoveCharge(1852.78f, 81.38f, 342.461f, 28.0f);
                                 }
 
-                            events.DelayEvents(12000, 0);
-                            events.DelayEvents(12000, 1);
+                            events.DelayEvents(12s, 0);
+                            events.DelayEvents(12s, 1);
                             events.ScheduleEvent(EVENT_SARONITE_VAPORS_SWIRL, 6s);
                         }
                     }
@@ -449,7 +450,7 @@ public:
 
         void JustDied(Unit*  /*killer*/) override
         {
-            me->DespawnOrUnsummon(3000);
+            me->DespawnOrUnsummon(3s);
 
             if (pInstance)
                 if (Creature* vezax = ObjectAccessor::GetCreature(*me, pInstance->GetGuidData(TYPE_VEZAX)))
@@ -527,7 +528,7 @@ class spell_mark_of_the_faceless_periodic_aura : public AuraScript
     {
         if (Unit* caster = GetCaster())
             if (Unit* target = GetTarget())
-                if (target->GetMapId() == 603)
+                if (target->GetMapId() == MAP_ULDUAR)
                 {
                     int32 dmg = 5000;
                     caster->CastCustomSpell(target, SPELL_MARK_OF_THE_FACELESS_EFFECT, 0, &dmg, 0, true);

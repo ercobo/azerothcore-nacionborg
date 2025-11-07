@@ -98,6 +98,7 @@ void ScriptMgr::Initialize()
     ScriptRegistry<PlayerScript>::InitEnabledHooksIfNeeded(PLAYERHOOK_END);
     ScriptRegistry<ServerScript>::InitEnabledHooksIfNeeded(SERVERHOOK_END);
     ScriptRegistry<SpellSC>::InitEnabledHooksIfNeeded(ALLSPELLHOOK_END);
+    ScriptRegistry<TicketScript>::InitEnabledHooksIfNeeded(TICKETHOOK_END);
     ScriptRegistry<UnitScript>::InitEnabledHooksIfNeeded(UNITHOOK_END);
     ScriptRegistry<WorldObjectScript>::InitEnabledHooksIfNeeded(WORLDOBJECTHOOK_END);
     ScriptRegistry<WorldScript>::InitEnabledHooksIfNeeded(WORLDHOOK_END);
@@ -126,7 +127,7 @@ void ScriptMgr::Unload()
     SCR_CLEAR<CreatureScript>();
     SCR_CLEAR<DatabaseScript>();
     SCR_CLEAR<DynamicObjectScript>();
-    SCR_CLEAR<ElunaScript>();
+    SCR_CLEAR<ALEScript>();
     SCR_CLEAR<FormulaScript>();
     SCR_CLEAR<GameEventScript>();
     SCR_CLEAR<GameObjectScript>();
@@ -145,6 +146,7 @@ void ScriptMgr::Unload()
     SCR_CLEAR<ServerScript>();
     SCR_CLEAR<SpellSC>();
     SCR_CLEAR<SpellScriptLoader>();
+    SCR_CLEAR<TicketScript>();
     SCR_CLEAR<TransportScript>();
     SCR_CLEAR<UnitScript>();
     SCR_CLEAR<VehicleScript>();
@@ -224,7 +226,8 @@ void ScriptMgr::CheckIfScriptsInDatabaseExist()
                 !ScriptRegistry<CommandSC>::GetScriptById(sid) &&
                 !ScriptRegistry<ArenaScript>::GetScriptById(sid) &&
                 !ScriptRegistry<GroupScript>::GetScriptById(sid) &&
-                !ScriptRegistry<DatabaseScript>::GetScriptById(sid))
+                !ScriptRegistry<DatabaseScript>::GetScriptById(sid) &&
+                !ScriptRegistry<TicketScript>::GetScriptById(sid))
                 {
                     LOG_ERROR("sql.sql", "Script named '{}' is assigned in the database, but has no code!", scriptName);
                 }

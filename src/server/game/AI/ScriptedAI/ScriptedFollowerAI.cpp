@@ -15,13 +15,6 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ScriptData
-SDName: FollowerAI
-SD%Complete: 50
-SDComment: This AI is under development
-SDCategory: Npc
-EndScriptData */
-
 #include "ScriptedFollowerAI.h"
 #include "Group.h"
 #include "Player.h"
@@ -209,7 +202,7 @@ void FollowerAI::UpdateAI(uint32 uiDiff)
                     {
                         Player* member = groupRef->GetSource();
 
-                        if (member && me->IsWithinDistInMap(member, MAX_PLAYER_DISTANCE, true, false))
+                        if (member && me->IsWithinDistInMap(member, MAX_PLAYER_DISTANCE, true, false, false))
                         {
                             bIsMaxRangeExceeded = false;
                             break;
@@ -218,7 +211,7 @@ void FollowerAI::UpdateAI(uint32 uiDiff)
                 }
                 else
                 {
-                    if (me->IsWithinDistInMap(player, MAX_PLAYER_DISTANCE, true, false))
+                    if (me->IsWithinDistInMap(player, MAX_PLAYER_DISTANCE, true, false, false))
                         bIsMaxRangeExceeded = false;
                 }
             }
@@ -264,7 +257,7 @@ void FollowerAI::MovementInform(uint32 motionType, uint32 pointId)
     }
 }
 
-void FollowerAI::StartFollow(Player* player, uint32 factionForFollower, const Quest* quest)
+void FollowerAI::StartFollow(Player* player, uint32 factionForFollower, const Quest* quest, bool inheritWalkState, bool inheritSpeed)
 {
     if (me->GetVictim())
     {
@@ -297,7 +290,7 @@ void FollowerAI::StartFollow(Player* player, uint32 factionForFollower, const Qu
 
     AddFollowState(STATE_FOLLOW_INPROGRESS);
 
-    me->GetMotionMaster()->MoveFollow(player, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
+    me->GetMotionMaster()->MoveFollow(player, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE, MOTION_SLOT_ACTIVE, inheritWalkState, inheritSpeed);
 
     LOG_DEBUG("scripts.ai", "FollowerAI start follow {} ({})", player->GetName(), m_uiLeaderGUID.ToString());
 }

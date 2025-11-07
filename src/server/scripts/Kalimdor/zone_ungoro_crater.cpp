@@ -15,18 +15,6 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ScriptData
-SDName: Ungoro Crater
-SD%Complete: 100
-SDComment: Support for Quest: 4245, 4491
-SDCategory: Ungoro Crater
-EndScriptData */
-
-/* ContentData
-npc_a-me
-npc_ringo
-EndContentData */
-
 #include "CreatureScript.h"
 #include "Player.h"
 #include "ScriptedCreature.h"
@@ -60,7 +48,8 @@ public:
     {
         if (quest->GetQuestId() == QUEST_CHASING_AME)
         {
-            CAST_AI(npc_escortAI, (creature->AI()))->Start(false, false, player->GetGUID());
+            creature->SetWalk(true);
+            CAST_AI(npc_escortAI, (creature->AI()))->Start(false, player->GetGUID());
             creature->AI()->Talk(SAY_READY, player);
             creature->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
             // Change faction so mobs attack

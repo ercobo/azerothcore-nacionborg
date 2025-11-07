@@ -35,10 +35,8 @@ enum GuardSays
 
 enum Spells
 {
-    SPELL_IMPALE_10                 = 28783,
-    SPELL_IMPALE_25                 = 56090,
-    SPELL_LOCUST_SWARM_10           = 28785,
-    SPELL_LOCUST_SWARM_25           = 54021,
+    SPELL_IMPALE                    = 28783,
+    SPELL_LOCUST_SWARM              = 28785,
     SPELL_SUMMON_CORPSE_SCRABS_5    = 29105,
     SPELL_SUMMON_CORPSE_SCRABS_10   = 28864,
     SPELL_BERSERK                   = 26662
@@ -118,7 +116,7 @@ public:
 
             Talk(SAY_SLAY);
             victim->CastSpell(victim, SPELL_SUMMON_CORPSE_SCRABS_5, true, nullptr, nullptr, me->GetGUID());
-            instance->SetData(DATA_IMMORTAL_FAIL, 0);
+            instance->StorePersistentData(PERSISTENT_DATA_IMMORTAL_FAIL, 1);
         }
 
         void JustEngagedWith(Unit* who) override
@@ -138,12 +136,12 @@ public:
             }
 
             ScheduleTimedEvent(15s, [&] {
-                DoCastRandomTarget(RAID_MODE(SPELL_IMPALE_10, SPELL_IMPALE_25));
+                DoCastRandomTarget(SPELL_IMPALE);
             }, 20s);
 
             ScheduleTimedEvent(70s, 2min, [&] {
                 Talk(EMOTE_LOCUST);
-                DoCastSelf(RAID_MODE(SPELL_LOCUST_SWARM_10, SPELL_LOCUST_SWARM_25));
+                DoCastSelf(SPELL_LOCUST_SWARM);
 
                 me->m_Events.AddEventAtOffset([&]
                 {

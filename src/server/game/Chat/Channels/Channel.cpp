@@ -185,10 +185,7 @@ void Channel::JoinChannel(Player* player, std::string const& pass)
         return;
     }
 
-    if (HasFlag(CHANNEL_FLAG_LFG) &&
-            sWorld->getBoolConfig(CONFIG_RESTRICTED_LFG_CHANNEL) &&
-            AccountMgr::IsPlayerAccount(player->GetSession()->GetSecurity()) &&
-            player->GetGroup())
+    if (IsLFG() && sWorld->getBoolConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && !player->IsUsingLfg())
     {
         WorldPacket data;
         MakeNotInLfg(&data);
@@ -911,26 +908,26 @@ void Channel::SendToAll(WorldPacket* data, ObjectGuid guid)
 {
     for (PlayerContainer::const_iterator i = playersStore.begin(); i != playersStore.end(); ++i)
         if (!guid || !i->second.plrPtr->GetSocial()->HasIgnore(guid))
-            i->second.plrPtr->GetSession()->SendPacket(data);
+            i->second.plrPtr->SendDirectMessage(data);
 }
 
 void Channel::SendToAllButOne(WorldPacket* data, ObjectGuid who)
 {
     for (PlayerContainer::const_iterator i = playersStore.begin(); i != playersStore.end(); ++i)
         if (i->first != who)
-            i->second.plrPtr->GetSession()->SendPacket(data);
+            i->second.plrPtr->SendDirectMessage(data);
 }
 
 void Channel::SendToOne(WorldPacket* data, ObjectGuid who)
 {
     if (Player* player = ObjectAccessor::FindConnectedPlayer(who))
-        player->GetSession()->SendPacket(data);
+        player->SendDirectMessage(data);
 }
 
 void Channel::SendToAllWatching(WorldPacket* data)
 {
     for (PlayersWatchingContainer::const_iterator i = playersWatchingStore.begin(); i != playersWatchingStore.end(); ++i)
-        (*i)->GetSession()->SendPacket(data);
+        (*i)->SendDirectMessage(data);
 }
 
 bool Channel::ShouldAnnouncePlayer(Player const* player) const
@@ -1233,8 +1230,8 @@ void Channel::ToggleModeration(Player* player)
         return;
     }
 
-    const uint32 level = sWorld->getIntConfig(CONFIG_GM_LEVEL_CHANNEL_MODERATION);
-    const bool gm = (level && player->GetSession()->GetSecurity() >= level);
+    const AccountTypes level = static_cast<AccountTypes>(sWorld->getIntConfig(CONFIG_GM_LEVEL_CHANNEL_MODERATION));
+    const bool gm = (player->GetSession()->GetSecurity() >= level);
 
     if (!playersStore[guid].IsModerator() && !gm)
     {

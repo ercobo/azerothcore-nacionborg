@@ -20,6 +20,7 @@
 #include "ScriptedCreature.h"
 #include "nexus.h"
 #include "Player.h"
+#include "Group.h"
 
 DoorData const doorData[] =
 {
@@ -32,7 +33,7 @@ DoorData const doorData[] =
 class instance_nexus : public InstanceMapScript
 {
 public:
-    instance_nexus() : InstanceMapScript("instance_nexus", 576) { }
+    instance_nexus() : InstanceMapScript("instance_nexus", MAP_THE_NEXUS) { }
 
     InstanceScript* GetInstanceScript(InstanceMap* map) const override
     {
@@ -52,37 +53,31 @@ public:
 
         void OnCreatureCreate(Creature* creature) override
         {
-            Map::PlayerList const& players = instance->GetPlayers();
-            TeamId TeamIdInInstance = TEAM_NEUTRAL;
-            if (!players.IsEmpty())
-                if (Player* pPlayer = players.begin()->GetSource())
-                    TeamIdInInstance = pPlayer->GetTeamId();
-
             switch (creature->GetEntry())
             {
                 case NPC_ALLIANCE_RANGER:
                     creature->SetFaction(FACTION_MONSTER_2);
-                    if (TeamIdInInstance == TEAM_ALLIANCE)
+                    if (GetTeamIdInInstance() == TEAM_ALLIANCE)
                         creature->UpdateEntry(NPC_HORDE_RANGER);
                     break;
                 case NPC_ALLIANCE_BERSERKER:
                     creature->SetFaction(FACTION_MONSTER_2);
-                    if (TeamIdInInstance == TEAM_ALLIANCE)
+                    if (GetTeamIdInInstance() == TEAM_ALLIANCE)
                         creature->UpdateEntry(NPC_HORDE_BERSERKER);
                     break;
                 case NPC_ALLIANCE_COMMANDER:
                     creature->SetFaction(FACTION_MONSTER_2);
-                    if (TeamIdInInstance == TEAM_ALLIANCE)
+                    if (GetTeamIdInInstance() == TEAM_ALLIANCE)
                         creature->UpdateEntry(NPC_HORDE_COMMANDER);
                     break;
                 case NPC_ALLIANCE_CLERIC:
                     creature->SetFaction(FACTION_MONSTER_2);
-                    if (TeamIdInInstance == TEAM_ALLIANCE)
+                    if (GetTeamIdInInstance() == TEAM_ALLIANCE)
                         creature->UpdateEntry(NPC_HORDE_CLERIC);
                     break;
                 case NPC_COMMANDER_STOUTBEARD:
                     creature->SetFaction(FACTION_MONSTER_2);
-                    if (TeamIdInInstance == TEAM_ALLIANCE)
+                    if (GetTeamIdInInstance() == TEAM_ALLIANCE)
                         creature->UpdateEntry(NPC_COMMANDER_KOLURG);
                     break;
             }

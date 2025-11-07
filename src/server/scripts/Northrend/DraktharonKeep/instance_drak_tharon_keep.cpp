@@ -34,7 +34,7 @@ DoorData const doorData[] =
 class instance_drak_tharon_keep : public InstanceMapScript
 {
 public:
-    instance_drak_tharon_keep() : InstanceMapScript("instance_drak_tharon_keep", 600) { }
+    instance_drak_tharon_keep() : InstanceMapScript("instance_drak_tharon_keep", MAP_DRAK_THARON_KEEP) { }
 
     struct instance_drak_tharon_keep_InstanceScript : public InstanceScript
     {
@@ -89,7 +89,7 @@ class spell_dtk_raise_dead_aura : public AuraScript
 
     void HandleEffectRemove(AuraEffect const*  /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
-        GetUnitOwner()->ToCreature()->DespawnOrUnsummon(1);
+        GetUnitOwner()->ToCreature()->DespawnOrUnsummon(1ms);
         GetUnitOwner()->SummonCreature(NPC_RISEN_DRAKKARI_WARRIOR, *GetUnitOwner());
     }
 

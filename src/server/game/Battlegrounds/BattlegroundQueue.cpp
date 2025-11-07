@@ -366,7 +366,7 @@ void BattlegroundQueue::RemovePlayer(ObjectGuid guid, bool decreaseInvitedCount)
 
 void BattlegroundQueue::AddEvent(BasicEvent* Event, uint64 e_time)
 {
-    m_events.AddEvent(Event, m_events.CalculateTime(e_time));
+    m_events.AddEventAtOffset(Event, Milliseconds(e_time));
 }
 
 bool BattlegroundQueue::IsPlayerInvitedToRatedArena(ObjectGuid pl_guid)
@@ -775,9 +775,8 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 diff, BattlegroundTypeId 
 
     sScriptMgr->OnQueueUpdate(this, diff, bgTypeId, bracket_id, arenaType, isRated, arenaRating);
 
-    if (!sScriptMgr->OnQueueUpdateValidity(this, diff, bgTypeId, bracket_id, arenaType, isRated, arenaRating)) {
+    if (!sScriptMgr->OnQueueUpdateValidity(this, diff, bgTypeId, bracket_id, arenaType, isRated, arenaRating))
         return;
-    }
 
     m_SelectionPools[TEAM_ALLIANCE].Init();
     m_SelectionPools[TEAM_HORDE].Init();
@@ -1275,7 +1274,7 @@ void BattlegroundQueue::InviteGroupToBG(GroupQueueInfo* ginfo, Battleground* bg,
         // send status packet
         WorldPacket data;
         sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, bg, queueSlot, STATUS_WAIT_JOIN, INVITE_ACCEPT_WAIT_TIME, 0, ginfo->ArenaType, TEAM_NEUTRAL, bg->isRated());
-        player->GetSession()->SendPacket(&data);
+        player->SendDirectMessage(&data);
 
         // pussywizard:
         if (bg->isArena() && bg->isRated())
@@ -1313,7 +1312,7 @@ bool BGQueueInviteEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
             // send remaining time in queue
             WorldPacket data;
             sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, bg, queueSlot, STATUS_WAIT_JOIN, INVITE_ACCEPT_WAIT_TIME - INVITATION_REMIND_TIME, 0, m_ArenaType, TEAM_NEUTRAL, bg->isRated(), m_BgTypeId);
-            player->GetSession()->SendPacket(&data);
+            player->SendDirectMessage(&data);
         }
     }
 
@@ -1356,11 +1355,11 @@ bool BGQueueRemoveEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
                     CharacterDatabase.Execute(stmt);
                 }
 
-                sScriptMgr->OnBattlegroundDesertion(player, BG_DESERTION_TYPE_NO_ENTER_BUTTON);
+                sScriptMgr->OnPlayerBattlegroundDesertion(player, BG_DESERTION_TYPE_NO_ENTER_BUTTON);
             }
 
             if (bg && bg->isArena() && (bg->GetStatus() == STATUS_IN_PROGRESS || bg->GetStatus() == STATUS_WAIT_JOIN))
-                sScriptMgr->OnBattlegroundDesertion(player, ARENA_DESERTION_TYPE_NO_ENTER_BUTTON);
+                sScriptMgr->OnPlayerBattlegroundDesertion(player, ARENA_DESERTION_TYPE_NO_ENTER_BUTTON);
 
             LOG_DEBUG("bg.battleground", "Battleground: removing player {} from bg queue for instance {} because of not pressing enter battle in time.", player->GetGUID().ToString(), m_BgInstanceGUID);
 

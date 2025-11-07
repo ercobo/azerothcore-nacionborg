@@ -15,19 +15,6 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ScriptData
-SDName: Winterspring
-SD%Complete: Almost Completely Emptied
-SDComment: Vendor Rivern Frostwind. Quest Support 4901
-SDCategory: Winterspring
-EndScriptData */
-
-/* ContentData
-npc_rivern_frostwind
-npc_ranshalla
-go_elune_fire
-EndContentData */
-
 #include "CreatureScript.h"
 #include "GameObjectScript.h"
 #include "Player.h"
@@ -35,7 +22,6 @@ EndContentData */
 #include "ScriptedEscortAI.h"
 #include "ScriptedGossip.h"
 
-// Theirs
 /*######
 ## npc_rivern_frostwind
 ######*/
@@ -300,7 +286,10 @@ public:
             creature->SetFaction(FACTION_ESCORT_A_NEUTRAL_PASSIVE);
 
             if (npc_ranshallaAI* escortAI = dynamic_cast<npc_ranshallaAI*>(creature->AI()))
-                escortAI->Start(false, false, player->GetGUID(), quest);
+            {
+                creature->SetWalk(true);
+                escortAI->Start(false, player->GetGUID(), quest);
+            }
 
             return true;
         }
@@ -500,7 +489,7 @@ public:
                     if (Creature* guard = me->GetMap()->GetCreature(_guardEluneGUID))
                     {
                         guard->GetMotionMaster()->MovePoint(0, wingThicketLocations[2].m_positionX, wingThicketLocations[2].m_positionY, wingThicketLocations[2].m_positionZ);
-                        guard->DespawnOrUnsummon(4000);
+                        guard->DespawnOrUnsummon(4s);
                     }
                     break;
                 case SAY_PRIESTESS_ALTAR_20:
@@ -508,7 +497,7 @@ public:
                     if (Creature* priestess = me->GetMap()->GetCreature(_firstPriestessGUID))
                     {
                         priestess->GetMotionMaster()->MovePoint(0, wingThicketLocations[0].m_positionX, wingThicketLocations[0].m_positionY, wingThicketLocations[0].m_positionZ);
-                        priestess->DespawnOrUnsummon(4000);
+                        priestess->DespawnOrUnsummon(4s);
                     }
                     break;
                 case SAY_PRIESTESS_ALTAR_21:
@@ -516,7 +505,7 @@ public:
                     if (Creature* priestess = me->GetMap()->GetCreature(_secondPriestessGUID))
                     {
                         priestess->GetMotionMaster()->MovePoint(0, wingThicketLocations[1].m_positionX, wingThicketLocations[1].m_positionY, wingThicketLocations[1].m_positionZ);
-                        priestess->DespawnOrUnsummon(4000);
+                        priestess->DespawnOrUnsummon(4s);
                     }
                     break;
                 case DATA_EVENT_END:
@@ -540,7 +529,7 @@ public:
                         player->GroupEventHappens(QUEST_GUARDIANS_ALTAR, me);
                         Talk(SAY_RANSHALLA_END_2, player);
                     }
-                    me->DespawnOrUnsummon(4000);
+                    me->DespawnOrUnsummon(4s);
                     break;
             }
         }
@@ -618,7 +607,6 @@ public:
 
 void AddSC_winterspring()
 {
-    // Theirs
     new npc_rivern_frostwind();
     new npc_ranshalla();
     new go_elune_fire();

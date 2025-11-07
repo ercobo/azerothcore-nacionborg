@@ -116,7 +116,7 @@ enum LootState
 // 5 sec for bobber catch
 #define FISHING_BOBBER_READY_TIME 5
 
-class GameObject : public WorldObject, public GridObject<GameObject>, public MovableMapObject
+class GameObject : public WorldObject, public GridObject<GameObject>, public MovableMapObject, public UpdatableMapObject
 {
 public:
     explicit GameObject();
@@ -156,8 +156,8 @@ public:
 
     void SaveToDB(bool saveAddon = false);
     void SaveToDB(uint32 mapid, uint8 spawnMask, uint32 phaseMask, bool saveAddon = false);
-    bool LoadFromDB(ObjectGuid::LowType guid, Map* map) { return LoadGameObjectFromDB(guid, map, false); }
-    bool LoadGameObjectFromDB(ObjectGuid::LowType guid, Map* map, bool addToMap = true);
+    virtual bool LoadFromDB(ObjectGuid::LowType guid, Map* map) { return LoadGameObjectFromDB(guid, map, false); }
+    virtual bool LoadGameObjectFromDB(ObjectGuid::LowType guid, Map* map, bool addToMap = true);
     void DeleteFromDB();
 
     void SetOwnerGUID(ObjectGuid owner)
@@ -198,8 +198,7 @@ public:
     void Refresh();
     void DespawnOrUnsummon(Milliseconds delay = 0ms, Seconds forcedRespawnTime = 0s);
     void Delete();
-    void GetFishLoot(Loot* loot, Player* loot_owner);
-    void GetFishLootJunk(Loot* loot, Player* loot_owner);
+    void GetFishLoot(Loot* fishLoot, Player* lootOwner, bool junk = false);
     [[nodiscard]] GameobjectTypes GetGoType() const { return GameobjectTypes(GetByteValue(GAMEOBJECT_BYTES_1, 1)); }
     void SetGoType(GameobjectTypes type) { SetByteValue(GAMEOBJECT_BYTES_1, 1, type); }
     [[nodiscard]] GOState GetGoState() const { return GOState(GetByteValue(GAMEOBJECT_BYTES_1, 0)); }
@@ -232,8 +231,8 @@ public:
     void RemoveLootMode(uint16 lootMode) { m_LootMode &= ~lootMode; }
     void ResetLootMode() { m_LootMode = LOOT_MODE_DEFAULT; }
 
-    void AddToSkillupList(ObjectGuid playerGuid);
-    [[nodiscard]] bool IsInSkillupList(ObjectGuid playerGuid) const;
+    void AddToSkillupList(ObjectGuid const& playerGuid);
+    [[nodiscard]] bool IsInSkillupList(ObjectGuid const& playerGuid) const;
 
     void AddUniqueUse(Player* player);
     void AddUse() { ++m_usetimes; }
@@ -363,6 +362,8 @@ public:
     void SaveStateToDB();
 
     std::string GetDebugInfo() const override;
+
+    bool IsUpdateNeeded() override;
 protected:
     bool AIM_Initialize();
     GameObjectModel* CreateModel();
@@ -413,7 +414,7 @@ private:
     void UpdatePackedRotation();
 
     //! Object distance/size - overridden from Object::_IsWithinDist. Needs to take in account proper GO size.
-    bool _IsWithinDist(WorldObject const* obj, float dist2compare, bool /*is3D*/, bool /*useBoundingRadius = true*/) const override
+    bool _IsWithinDist(WorldObject const* obj, float dist2compare, bool /*is3D*/, bool /*incOwnRadius = true*/, bool /*incTargetRadius = true*/) const override
     {
         //! Following check does check 3d distance
         dist2compare += obj->GetObjectSize();

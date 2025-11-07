@@ -15,18 +15,6 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ScriptData
-SDName: Stonetalon_Mountains
-SD%Complete: 95
-SDComment: Quest support: 6627, 6523
-SDCategory: Stonetalon Mountains
-EndScriptData */
-
-/* ContentData
-npc_braug_dimspirit
-npc_kaya_flathoof
-EndContentData */
-
 #include "CreatureScript.h"
 #include "Player.h"
 #include "ScriptedCreature.h"
@@ -149,7 +137,10 @@ public:
         if (quest->GetQuestId() == QUEST_PROTECT_KAYA)
         {
             if (npc_escortAI* pEscortAI = CAST_AI(npc_kaya_flathoof::npc_kaya_flathoofAI, creature->AI()))
-                pEscortAI->Start(true, false, player->GetGUID());
+            {
+                creature->SetWalk(true);
+                pEscortAI->Start(true, player->GetGUID());
+            }
 
             creature->AI()->Talk(SAY_START);
             creature->SetFaction(FACTION_ESCORTEE_N_NEUTRAL_PASSIVE);

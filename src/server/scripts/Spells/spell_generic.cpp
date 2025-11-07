@@ -15,6 +15,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "AreaDefines.h"
 #include "Battlefield.h"
 #include "BattlefieldMgr.h"
 #include "Battleground.h"
@@ -340,7 +341,8 @@ private:
 /* 55640 - Lightweave Embroidery
    67698 - Item - Coliseum 25 Normal Healer Trinket
    67752 - Item - Coliseum 25 Heroic Healer Trinket
-   69762 - Unchained Magic */
+   69762 - Unchained Magic
+   43983 - Energy Storm */
 class spell_gen_allow_proc_from_spells_with_cost : public AuraScript
 {
     PrepareAuraScript(spell_gen_allow_proc_from_spells_with_cost);
@@ -538,9 +540,9 @@ class spell_gen_rallying_cry_of_the_dragonslayer : public SpellScript
     {
         targets.clear();
 
-        uint32 zoneId = 1519;
-        if (GetCaster()->GetMapId() == 1) // Kalimdor
-            zoneId = 1637;
+        uint32 zoneId = AREA_STORMWIND_CITY;
+        if (GetCaster()->GetMapId() == MAP_KALIMDOR)
+            zoneId = AREA_ORGRIMMAR;
 
         Map::PlayerList const& pList = GetCaster()->GetMap()->GetPlayers();
         for (Map::PlayerList::const_iterator itr = pList.begin(); itr != pList.end(); ++itr)
@@ -604,7 +606,6 @@ class spell_gen_black_magic_enchant : public AuraScript
     }
 };
 
-// 53642 - The Might of Mograine
 // 64174 - Protective Gaze
 class spell_gen_area_aura_select_players : public AuraScript
 {
@@ -620,6 +621,7 @@ class spell_gen_area_aura_select_players : public AuraScript
     }
 };
 
+// 53642 - The Might of Mograine
 // 62650 - Fortitude of Frost
 // 62670 - Resilience of Nature
 // 62671 - Speed of Invention
@@ -1356,11 +1358,7 @@ class spell_gen_cannibalize : public SpellScript
         // search for nearby enemy corpse in range
         Acore::AnyDeadUnitSpellTargetInRangeCheck check(caster, max_range, GetSpellInfo(), TARGET_CHECK_CORPSE);
         Acore::WorldObjectSearcher<Acore::AnyDeadUnitSpellTargetInRangeCheck> searcher(caster, result, check);
-        Cell::VisitWorldObjects(caster, searcher, max_range);
-        if (!result)
-        {
-            Cell::VisitGridObjects(caster, searcher, max_range);
-        }
+        Cell::VisitObjects(caster, searcher, max_range);
         if (!result)
         {
             return SPELL_FAILED_NO_EDIBLE_CORPSES;
@@ -1900,8 +1898,6 @@ class spell_gen_feign_death_no_prevent_emotes : public AuraScript
 
 enum Teleporting
 {
-    AREA_VIOLET_CITADEL_SPIRE   = 4637,
-
     SPELL_TELEPORT_SPIRE_DOWN   = 59316,
     SPELL_TELEPORT_SPIRE_UP     = 59314
 };
@@ -1922,7 +1918,7 @@ class spell_gen_teleporting : public SpellScript
             return;
 
         // return from top
-        if (target->ToPlayer()->GetAreaId() == AREA_VIOLET_CITADEL_SPIRE)
+        if (target->ToPlayer()->GetAreaId() == AREA_VARGOTHS_RETREAT)
             target->CastSpell(target, SPELL_TELEPORT_SPIRE_DOWN, true);
             // teleport atop
         else
@@ -1974,7 +1970,7 @@ class spell_pvp_trinket_wotf_shared_cd : public SpellScript
             {
                 WorldPacket data;
                 player->BuildCooldownPacket(data, SPELL_COOLDOWN_FLAG_INCLUDE_GCD, 7744, GetSpellInfo()->CategoryRecoveryTime); // Will of the forsaken
-                player->GetSession()->SendPacket(&data);
+                player->SendDirectMessage(&data);
             }
             else
             {
@@ -1987,11 +1983,11 @@ class spell_pvp_trinket_wotf_shared_cd : public SpellScript
                 data << uint16(GetSpellInfo()->GetCategory());                   // spell category
                 data << uint32(0);
                 data << uint32(GetSpellInfo()->CategoryRecoveryTime);
-                player->GetSession()->SendPacket(&data);
+                player->SendDirectMessage(&data);
 
                 WorldPacket data2;
                 player->BuildCooldownPacket(data2, SPELL_COOLDOWN_FLAG_INCLUDE_GCD, SPELL_PVP_TRINKET, GetSpellInfo()->CategoryRecoveryTime); // PvP Trinket spell
-                player->GetSession()->SendPacket(&data2);
+                player->SendDirectMessage(&data2);
             }
         }
     }
@@ -2654,7 +2650,7 @@ class spell_gen_spirit_healer_res : public SpellScript
         {
             WorldPacket data(SMSG_SPIRIT_HEALER_CONFIRM, 8);
             data << target->GetGUID();
-            originalCaster->GetSession()->SendPacket(&data);
+            originalCaster->SendDirectMessage(&data);
         }
     }
 
@@ -3710,7 +3706,7 @@ class spell_gen_despawn_self : public SpellScript
     void HandleDummy(SpellEffIndex effIndex)
     {
         if (GetSpellInfo()->Effects[effIndex].Effect == SPELL_EFFECT_DUMMY || GetSpellInfo()->Effects[effIndex].Effect == SPELL_EFFECT_SCRIPT_EFFECT)
-            GetCaster()->ToCreature()->DespawnOrUnsummon(1);
+            GetCaster()->ToCreature()->DespawnOrUnsummon(1ms);
     }
 
     void Register() override
@@ -4050,7 +4046,7 @@ public:
             // Triggered spell id dependent on riding skill and zone
             bool canFly = false;
             uint32 map = GetVirtualMapForMapAndZone(target->GetMapId(), target->GetZoneId());
-            if (map == 530 || (map == 571 && target->HasSpell(SPELL_COLD_WEATHER_FLYING)))
+            if (map == MAP_OUTLAND || (map == MAP_NORTHREND && target->HasSpell(SPELL_COLD_WEATHER_FLYING)))
                 canFly = true;
 
             AreaTableEntry const* area = sAreaTableStore.LookupEntry(target->GetAreaId());
@@ -5320,6 +5316,360 @@ class spell_gen_set_health : public SpellScript
     }
 };
 
+// 67557 - Serverside - Pet Scaling - Master Spell 03 - Intellect, Spirit, Resilience
+class spell_pet_intellect_spirit_resilience_scaling : public AuraScript
+{
+    PrepareAuraScript(spell_pet_intellect_spirit_resilience_scaling)
+
+    void CalculateIntellectAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
+    {
+        if (Player* modOwner = GetUnitOwner()->GetSpellModOwner())
+            amount = static_cast<int32>(CalculatePct(std::max<float>(0, modOwner->GetStat(STAT_INTELLECT)), 30));
+    }
+
+    void CalculateSpiritAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
+    {
+        if (Player* modOwner = GetUnitOwner()->GetSpellModOwner())
+            amount = static_cast<int32>(CalculatePct(std::max<float>(0, modOwner->GetStat(STAT_SPIRIT)), 30));
+    }
+
+    void HandleEffectApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+    {
+        GetUnitOwner()->ApplySpellImmune(GetId(), IMMUNITY_STATE, aurEff->GetAuraType(), true, SPELL_BLOCK_TYPE_POSITIVE);
+    }
+
+    void CalcPeriodic(AuraEffect const* /*aurEff*/, bool& isPeriodic, int32& amplitude)
+    {
+        if (!GetUnitOwner()->IsPet())
+            return;
+
+        isPeriodic = true;
+        amplitude = 3 * IN_MILLISECONDS;
+    }
+
+    void HandlePeriodic(AuraEffect const* aurEff)
+    {
+        PreventDefaultAction();
+        GetEffect(aurEff->GetEffIndex())->RecalculateAmount();
+    }
+
+    void Register() override
+    {
+        DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_pet_intellect_spirit_resilience_scaling::CalculateIntellectAmount, EFFECT_0, SPELL_AURA_MOD_STAT);
+        DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_pet_intellect_spirit_resilience_scaling::CalculateSpiritAmount, EFFECT_1,SPELL_AURA_MOD_STAT);
+        // The resilience scaling is not used. The owner's resilience is used directly
+        // DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_pet_intellect_spirit_resilience_scaling::CalculateResilienceAmount, EFFECT_2, SPELL_AURA_MOD_RATING);
+        OnEffectApply += AuraEffectApplyFn(spell_pet_intellect_spirit_resilience_scaling::HandleEffectApply, EFFECT_2, SPELL_AURA_ANY, AURA_EFFECT_HANDLE_REAL);
+        DoEffectCalcPeriodic += AuraEffectCalcPeriodicFn(spell_pet_intellect_spirit_resilience_scaling::CalcPeriodic, EFFECT_ALL, SPELL_AURA_ANY);
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_pet_intellect_spirit_resilience_scaling::HandlePeriodic, EFFECT_ALL, SPELL_AURA_ANY);
+    }
+};
+
+// 67561 - Serverside - Pet Scaling - Master Spell 06 - Spell Hit, Expertise, Spell Penetration
+class spell_pet_spellhit_expertise_spellpen_scaling : public AuraScript
+{
+    PrepareAuraScript(spell_pet_spellhit_expertise_spellpen_scaling)
+
+    int32 CalculatePercent(float hitChance, float cap, float maxChance)
+    {
+        return (hitChance / cap) * maxChance;
+    }
+
+    void CalculateSpellHitAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
+    {
+        if (Player* modOwner = GetUnitOwner()->GetSpellModOwner())
+            amount = CalculatePercent(modOwner->m_modMeleeHitChance, 8.0f, 17.0f);
+    }
+
+    void CalculateExpertiseAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
+    {
+        if (Player* modOwner = GetUnitOwner()->GetSpellModOwner())
+            amount = CalculatePercent(modOwner->m_modMeleeHitChance, 8.0f, 26.0f);
+    }
+
+    void CalculateSpellPenAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
+    {
+        if (Player* modOwner = GetUnitOwner()->GetSpellModOwner())
+            amount = modOwner->GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, SPELL_SCHOOL_MASK_SPELL);
+    }
+
+    void HandleEffectApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+    {
+        GetUnitOwner()->ApplySpellImmune(GetId(), IMMUNITY_STATE, aurEff->GetAuraType(), true, SPELL_BLOCK_TYPE_POSITIVE);
+    }
+
+    void CalcPeriodic(AuraEffect const* /*aurEff*/, bool& isPeriodic, int32& amplitude)
+    {
+        if (!GetUnitOwner()->IsPet())
+            return;
+
+        isPeriodic = true;
+        amplitude = 3 * IN_MILLISECONDS;
+    }
+
+    void HandlePeriodic(AuraEffect const* aurEff)
+    {
+        PreventDefaultAction();
+        GetEffect(aurEff->GetEffIndex())->RecalculateAmount();
+    }
+
+    void Register() override
+    {
+        DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_pet_spellhit_expertise_spellpen_scaling::CalculateSpellHitAmount, EFFECT_0, SPELL_AURA_MOD_SPELL_HIT_CHANCE);
+        DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_pet_spellhit_expertise_spellpen_scaling::CalculateExpertiseAmount, EFFECT_1, SPELL_AURA_MOD_EXPERTISE);
+        DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_pet_spellhit_expertise_spellpen_scaling::CalculateSpellPenAmount, EFFECT_2, SPELL_AURA_MOD_TARGET_RESISTANCE);
+        OnEffectApply += AuraEffectApplyFn(spell_pet_spellhit_expertise_spellpen_scaling::HandleEffectApply, EFFECT_ALL, SPELL_AURA_ANY, AURA_EFFECT_HANDLE_REAL);
+        DoEffectCalcPeriodic += AuraEffectCalcPeriodicFn(spell_pet_spellhit_expertise_spellpen_scaling::CalcPeriodic, EFFECT_ALL, SPELL_AURA_ANY);
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_pet_spellhit_expertise_spellpen_scaling::HandlePeriodic, EFFECT_ALL, SPELL_AURA_ANY);
+    }
+};
+
+// 7098 - Curse of Mending
+// 39647 - Curse of Mending
+class spell_gen_proc_on_victim : public AuraScript
+{
+    PrepareAuraScript(spell_gen_proc_on_victim);
+
+    void OnProc(AuraEffect const* /*aurEff*/, ProcEventInfo& eventInfo)
+    {
+        PreventDefaultAction();
+
+        if (Unit* target = eventInfo.GetActionTarget())
+            GetUnitOwner()->CastSpell(target, GetSpellInfo()->Effects[EFFECT_0].TriggerSpell, true);
+    }
+
+    void Register() override
+    {
+        OnEffectProc += AuraEffectProcFn(spell_gen_proc_on_victim::OnProc, EFFECT_0, SPELL_AURA_PROC_TRIGGER_SPELL);
+    }
+};
+
+enum TranslocateSpells
+{
+    SPELL_TRANSLOCATION_DOWN = 45368,
+    SPELL_TRANSLOCATION_UP   = 45371
+};
+
+class spell_gen_translocate : public SpellScript
+{
+    PrepareSpellScript(spell_gen_translocate);
+
+public:
+    spell_gen_translocate(uint32 spellId) : SpellScript(), _spellId(spellId) {}
+
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo({ _spellId });
+    }
+
+    void HandleScript()
+    {
+        GetCaster()->CastSpell(GetCaster(), _spellId);
+    }
+
+    void Register() override
+    {
+        AfterCast += SpellCastFn(spell_gen_translocate::HandleScript);
+    }
+
+private:
+    uint32 _spellId;
+};
+
+class spell_gen_cooldown_all : public SpellScript
+{
+    PrepareSpellScript(spell_gen_cooldown_all);
+
+    void HandleScript(SpellEffIndex /*effIndex*/)
+    {
+        if (Player* player = GetHitPlayer())
+            player->RemoveAllSpellCooldown();
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_gen_cooldown_all::HandleScript, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+    }
+};
+
+// 29007 - Drink (Freshly-Squeezed Lemonade)
+// 29008 - Food (Friendship Bread)
+enum HeartFood
+{
+    SPELL_VISUAL_KIT_HEART_EMOTE = 6552
+};
+
+class spell_gen_food_heart_emote : public AuraScript
+{
+    PrepareAuraScript(spell_gen_food_heart_emote);
+
+    void CalcPeriodic(AuraEffect const* /*effect*/, bool& isPeriodic, int32& amplitude)
+    {
+        isPeriodic = true;
+        amplitude = 5 * IN_MILLISECONDS;
+    }
+
+    void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        GetUnitOwner()->SendPlaySpellVisual(SPELL_VISUAL_KIT_HEART_EMOTE);
+    }
+
+    void HandleUpdatePeriodic(AuraEffect* /*aurEff*/)
+    {
+        GetUnitOwner()->SendPlaySpellVisual(SPELL_VISUAL_KIT_HEART_EMOTE);
+    }
+
+    void Register() override
+    {
+        AuraType effName = (m_scriptSpellId == 29007) ? SPELL_AURA_MOD_POWER_REGEN : SPELL_AURA_MOD_REGEN;
+        OnEffectApply += AuraEffectApplyFn(spell_gen_food_heart_emote::OnApply, EFFECT_0, effName, AURA_EFFECT_HANDLE_REAL);
+        DoEffectCalcPeriodic += AuraEffectCalcPeriodicFn(spell_gen_food_heart_emote::CalcPeriodic, EFFECT_0, effName);
+        OnEffectUpdatePeriodic += AuraEffectUpdatePeriodicFn(spell_gen_food_heart_emote::HandleUpdatePeriodic, EFFECT_0, effName);
+    }
+};
+
+// 456 - SHOWLABEL Only OFF
+class spell_gen_showlabel_off : public SpellScript
+{
+    PrepareSpellScript(spell_gen_showlabel_off)
+
+    void HandleScriptEffect(SpellEffIndex /*effIndex*/)
+    {
+        if (Player* player = GetCaster()->ToPlayer())
+            player->SetGMChat(false);
+    }
+
+    void Register() override
+    {
+        OnEffectHit += SpellEffectFn(spell_gen_showlabel_off::HandleScriptEffect, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+    }
+};
+
+// 2765 - SHOWLABEL Only ON
+class spell_gen_showlabel_on : public SpellScript
+{
+    PrepareSpellScript(spell_gen_showlabel_on)
+
+    void HandleScriptEffect(SpellEffIndex /*effIndex*/)
+    {
+        if (Player* player = GetCaster()->ToPlayer())
+            player->SetGMChat(true);
+    }
+
+    void Register() override
+    {
+        OnEffectHit += SpellEffectFn(spell_gen_showlabel_on::HandleScriptEffect, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+    }
+};
+
+// 1509 - GM Only OFF
+class spell_gen_gm_off : public SpellScript
+{
+    PrepareSpellScript(spell_gen_gm_off)
+
+    void HandleScriptEffect(SpellEffIndex /*effIndex*/)
+    {
+        if (Player* player = GetCaster()->ToPlayer())
+        {
+            player->SetGameMaster(false);
+            player->UpdateTriggerVisibility();
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHit += SpellEffectFn(spell_gen_gm_off::HandleScriptEffect, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+    }
+};
+
+// 18139 - GM Only ON
+class spell_gen_gm_on : public SpellScript
+{
+    PrepareSpellScript(spell_gen_gm_on)
+
+    void HandleScriptEffect(SpellEffIndex /*effIndex*/)
+    {
+        if (Player* player = GetCaster()->ToPlayer())
+        {
+            player->SetGameMaster(true);
+            player->UpdateTriggerVisibility();
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHit += SpellEffectFn(spell_gen_gm_on::HandleScriptEffect, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+    }
+};
+
+// 6147 - INVIS Only OFF
+class spell_gen_invis_off : public SpellScript
+{
+    PrepareSpellScript(spell_gen_invis_off)
+
+    void HandleScriptEffect(SpellEffIndex /*effIndex*/)
+    {
+        if (Player* player = GetCaster()->ToPlayer())
+            player->SetGMVisible(true);
+    }
+
+    void Register() override
+    {
+        OnEffectHit += SpellEffectFn(spell_gen_invis_off::HandleScriptEffect, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+    }
+};
+
+// 2763 - INVIS Only ON
+class spell_gen_invis_on : public SpellScript
+{
+    PrepareSpellScript(spell_gen_invis_on)
+
+    void HandleScriptEffect(SpellEffIndex /*effIndex*/)
+    {
+        if (Player* player = GetCaster()->ToPlayer())
+            player->SetGMVisible(false);
+    }
+
+    void Register() override
+    {
+        OnEffectHit += SpellEffectFn(spell_gen_invis_on::HandleScriptEffect, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+    }
+};
+
+// 20114, 24675 - BM Only OFF
+class spell_gen_bm_off : public SpellScript
+{
+    PrepareSpellScript(spell_gen_bm_off)
+
+    void HandleScriptEffect(SpellEffIndex /*effIndex*/)
+    {
+        if (Player* player = GetCaster()->ToPlayer())
+            player->SetBeastMaster(false);
+    }
+
+    void Register() override
+    {
+        OnEffectHit += SpellEffectFn(spell_gen_bm_off::HandleScriptEffect, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+    }
+};
+
+// 20115, 24676 - BM Only ON
+class spell_gen_bm_on : public SpellScript
+{
+    PrepareSpellScript(spell_gen_bm_on)
+
+    void HandleScriptEffect(SpellEffIndex /*effIndex*/)
+    {
+        if (Player* player = GetCaster()->ToPlayer())
+            player->SetBeastMaster(true);
+    }
+
+    void Register() override
+    {
+        OnEffectHit += SpellEffectFn(spell_gen_bm_on::HandleScriptEffect, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+    }
+};
+
 void AddSC_generic_spell_scripts()
 {
     RegisterSpellScript(spell_silithyst);
@@ -5478,4 +5828,19 @@ void AddSC_generic_spell_scripts()
     RegisterSpellScript(spell_gen_sober_up);
     RegisterSpellScript(spell_gen_steal_weapon);
     RegisterSpellScript(spell_gen_set_health);
+    RegisterSpellScript(spell_pet_intellect_spirit_resilience_scaling);
+    RegisterSpellScript(spell_pet_spellhit_expertise_spellpen_scaling);
+    RegisterSpellScript(spell_gen_proc_on_victim);
+    RegisterSpellScriptWithArgs(spell_gen_translocate, "spell_gen_translocate_down", SPELL_TRANSLOCATION_DOWN);
+    RegisterSpellScriptWithArgs(spell_gen_translocate, "spell_gen_translocate_up", SPELL_TRANSLOCATION_UP);
+    RegisterSpellScript(spell_gen_cooldown_all);
+    RegisterSpellScript(spell_gen_food_heart_emote);
+    RegisterSpellScript(spell_gen_showlabel_off);
+    RegisterSpellScript(spell_gen_showlabel_on);
+    RegisterSpellScript(spell_gen_gm_off);
+    RegisterSpellScript(spell_gen_gm_on);
+    RegisterSpellScript(spell_gen_invis_off);
+    RegisterSpellScript(spell_gen_invis_on);
+    RegisterSpellScript(spell_gen_bm_on);
+    RegisterSpellScript(spell_gen_bm_off);
 }

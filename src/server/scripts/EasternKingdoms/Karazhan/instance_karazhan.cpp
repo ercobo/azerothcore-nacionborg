@@ -47,6 +47,7 @@ ObjectData const creatureData[] =
     { NPC_JULIANNE,             DATA_JULIANNE  },
     { NPC_NIGHTBANE,            DATA_NIGHTBANE },
     { NPC_TERESTIAN_ILLHOOF,    DATA_TERESTIAN },
+    { NPC_TENRIS_MIRKBLOOD,     DATA_MIRKBLOOD },
     { 0,                        0              }
 };
 
@@ -67,7 +68,7 @@ DoorData const doorData[] =
 class instance_karazhan : public InstanceMapScript
 {
 public:
-    instance_karazhan() : InstanceMapScript("instance_karazhan", 532) { }
+    instance_karazhan() : InstanceMapScript("instance_karazhan", MAP_KARAZHAN) { }
 
     InstanceScript* GetInstanceScript(InstanceMap* map) const override
     {
@@ -271,9 +272,6 @@ public:
                             piece->RemoveAllAuras();
                             piece->setDeathState(DeathState::JustRespawned);
                             piece->SetHealth(piece->GetMaxHealth());
-                            float x, y, z, o;
-                            piece->GetHomePosition(x, y, z, o);
-                            piece->NearTeleportTo(x, y, z, o);
                             piece->AI()->DoAction(ACTION_CHESS_PIECE_RESET_ORIENTATION);
                             piece->RemoveUnitFlag(UNIT_FLAG_NOT_SELECTABLE);
                             piece->AI()->Reset();

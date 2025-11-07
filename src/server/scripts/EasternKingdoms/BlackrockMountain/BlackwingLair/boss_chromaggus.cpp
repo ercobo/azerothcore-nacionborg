@@ -118,7 +118,7 @@ public:
             return !victim->HasAura(SPELL_TIMELAPSE);
         }
 
-        void SetGUID(ObjectGuid guid, int32 id) override
+        void SetGUID(ObjectGuid const& guid, int32 id) override
         {
             if (id == GUID_LEVER_USER)
             {
@@ -188,11 +188,8 @@ public:
                             {
                                 DoCast(player, afflictionSpellID, true);
 
-                                if (player->HasAura(SPELL_BROODAF_BLUE) && player->HasAura(SPELL_BROODAF_BLACK) && player->HasAura(SPELL_BROODAF_RED) &&
-                                    player->HasAura(SPELL_BROODAF_BRONZE) && player->HasAura(SPELL_BROODAF_GREEN))
-                                {
+                                if (player->HasAllAuras(SPELL_BROODAF_BLUE, SPELL_BROODAF_BLACK, SPELL_BROODAF_RED, SPELL_BROODAF_BRONZE, SPELL_BROODAF_GREEN))
                                     DoCast(player, SPELL_CHROMATIC_MUT_1);
-                                }
                             }
                         }
                         events.ScheduleEvent(EVENT_AFFLICTION, 10s);
@@ -247,7 +244,7 @@ class go_chromaggus_lever : public GameObjectScript
                         if (Creature* creature = _instance->GetCreature(DATA_CHROMAGGUS))
                         {
                             creature->SetHomePosition(homePos);
-                            creature->GetMotionMaster()->MovePath(creature->GetEntry() * 10, false);
+                            creature->GetMotionMaster()->MoveWaypoint(creature->GetEntry() * 10, false);
                             creature->AI()->SetGUID(player->GetGUID(), GUID_LEVER_USER);
                         }
 

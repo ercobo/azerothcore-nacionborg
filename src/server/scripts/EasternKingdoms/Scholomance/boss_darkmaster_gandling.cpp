@@ -36,16 +36,13 @@ enum BossData
     GANDLING_ROOM_TO_USE
 };
 
-enum Timers
-{
-    TIMER_ARCANE_MIN = 8000,
-    TIMER_ARCANE_MAX = 14000,
-    TIMER_CURSE_MIN = 20000,
-    TIMER_CURSE_MAX = 30000,
-    TIMER_SHIELD_MIN = 30000,
-    TIMER_SHIELD_MAX = 40000,
-    TIMER_PORTAL = 25000
-};
+constexpr Milliseconds TIMER_ARCANE_MIN = 8s;
+constexpr Milliseconds TIMER_ARCANE_MAX = 14s;
+constexpr Milliseconds TIMER_CURSE_MIN = 20s;
+//constexpr Milliseconds TIMER_CURSE_MAX = 30s;
+constexpr Milliseconds TIMER_SHIELD_MIN = 30s;
+//constexpr Milliseconds TIMER_SHIELD_MAX = 40s;
+constexpr Milliseconds TIMER_PORTAL = 25s;
 
  enum IdPortalSpells
  {
@@ -307,7 +304,7 @@ public:
                 if (victim && (target->GetGUID() == victim->GetGUID()))
                 {
                     me->AddThreat(victim, -1000000); // drop current player, add a ton to second. This should guarantee that we don't end up with both 1 and 2 in a cage...
-                    if (Unit* newTarget = SelectTarget(SelectTargetMethod::MaxThreat, 1, 200.0f)) // search in whole room
+                    if (Unit* newTarget = SelectTarget(SelectTargetMethod::MaxThreat, 0, 200.0f, false, false)) // search in whole room
                     {
                         me->AddThreat(newTarget, 1000000);
                     }
@@ -335,18 +332,18 @@ public:
                 {
                 case SPELL_ARCANE_MISSILES:
                     DoCastVictim(SPELL_ARCANE_MISSILES);
-                    events.ScheduleEvent(SPELL_ARCANE_MISSILES, urand(TIMER_ARCANE_MIN, TIMER_ARCANE_MAX));
+                    events.ScheduleEvent(SPELL_ARCANE_MISSILES, TIMER_ARCANE_MIN, TIMER_ARCANE_MAX);
                     break;
                 case SPELL_CURSE_DARKMASTER:
                     if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 0.0f, true))
                     {
                         DoCast(target, SPELL_CURSE_DARKMASTER);
                     }
-                    events.ScheduleEvent(SPELL_ARCANE_MISSILES, urand(TIMER_ARCANE_MIN, TIMER_ARCANE_MAX));
+                    events.ScheduleEvent(SPELL_ARCANE_MISSILES, TIMER_ARCANE_MIN, TIMER_ARCANE_MAX);
                     break;
                 case SPELL_SHADOW_SHIELD:
                     DoCastSelf(SPELL_SHADOW_SHIELD);
-                    events.ScheduleEvent(SPELL_ARCANE_MISSILES, urand(TIMER_ARCANE_MIN, TIMER_ARCANE_MAX));
+                    events.ScheduleEvent(SPELL_ARCANE_MISSILES, TIMER_ARCANE_MIN, TIMER_ARCANE_MAX);
                     break;
 
                 case SPELL_SHADOW_PORTAL:

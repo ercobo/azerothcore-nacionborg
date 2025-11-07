@@ -68,7 +68,7 @@ struct boss_gruul : public BossAI
     {
         _Reset();
         _recentlySpoken = false;
-        _caveInTimer = 29000ms;
+        _caveInTimer = 29s;
     }
 
     void JustEngagedWith(Unit* /*who*/) override
@@ -84,7 +84,7 @@ struct boss_gruul : public BossAI
         }).Schedule(_caveInTimer, [this](TaskContext context)
         {
             DoCastRandomTarget(SPELL_CAVE_IN);
-            if (_caveInTimer > 4000ms)
+            if (_caveInTimer > 4s)
             {
                 _caveInTimer = _caveInTimer - 1500ms;
             }
@@ -95,7 +95,7 @@ struct boss_gruul : public BossAI
             context.Repeat(39900ms, 55700ms);
         }).Schedule(5600ms, [this](TaskContext context)
         {
-            if (Unit* target = SelectTarget(SelectTargetMethod::MaxThreat, 1, 5.0f))
+            if (Unit* target = SelectTarget(SelectTargetMethod::MaxThreat, 0, 5.0f, false, false))
             {
                 DoCast(target, SPELL_HURTFUL_STRIKE);
             }

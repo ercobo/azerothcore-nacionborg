@@ -23,10 +23,8 @@ enum Spells
 {
     SPELL_NECROTIC_AURA                         = 55593,
     SPELL_SUMMON_SPORE                          = 29234,
-    SPELL_DEATHBLOOM_10                         = 29865,
-    SPELL_DEATHBLOOM_25                         = 55053,
-    SPELL_INEVITABLE_DOOM_10                    = 29204,
-    SPELL_INEVITABLE_DOOM_25                    = 55052,
+    SPELL_DEATHBLOOM                            = 29865,
+    SPELL_INEVITABLE_DOOM                       = 29204,
     SPELL_BERSERK                               = 26662
 };
 
@@ -62,11 +60,9 @@ public:
     {
         explicit boss_loathebAI(Creature* c) : BossAI(c, BOSS_LOATHEB), summons(me)
         {
-            pInstance = me->GetInstanceScript();
             me->SetHomePosition(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation());
         }
 
-        InstanceScript* pInstance;
         uint8 doomCounter;
         EventMap events;
         SummonList summons;
@@ -77,14 +73,6 @@ public:
             events.Reset();
             summons.DespawnAll();
             doomCounter = 0;
-            if (pInstance)
-            {
-                pInstance->SetData(BOSS_LOATHEB, NOT_STARTED);
-                if (GameObject* go = me->GetMap()->GetGameObject(pInstance->GetGuidData(DATA_LOATHEB_GATE)))
-                {
-                    go->SetGoState(GO_STATE_ACTIVE);
-                }
-            }
         }
 
         void JustSummoned(Creature* cr) override
@@ -95,18 +83,13 @@ public:
 
         void SummonedCreatureDies(Creature*  /*cr*/, Unit*) override
         {
-            if (pInstance)
-            {
-                pInstance->SetData(DATA_SPORE_KILLED, 0);
-            }
+            instance->SetData(DATA_SPORE_KILLED, 0);
         }
 
         void KilledUnit(Unit* who) override
         {
-            if (who->IsPlayer() && pInstance)
-            {
-                pInstance->SetData(DATA_IMMORTAL_FAIL, 0);
-            }
+            if (who->IsPlayer())
+                instance->StorePersistentData(PERSISTENT_DATA_IMMORTAL_FAIL, 1);
         }
 
         void JustEngagedWith(Unit* who) override
@@ -118,24 +101,12 @@ public:
             events.ScheduleEvent(EVENT_INEVITABLE_DOOM, 2min);
             events.ScheduleEvent(EVENT_SUMMON_SPORE, 15s);
             events.ScheduleEvent(EVENT_BERSERK, 12min);
-            if (pInstance)
-            {
-                pInstance->SetData(BOSS_LOATHEB, IN_PROGRESS);
-                if (GameObject* go = me->GetMap()->GetGameObject(pInstance->GetGuidData(DATA_LOATHEB_GATE)))
-                {
-                    go->SetGoState(GO_STATE_READY);
-                }
-            }
         }
 
         void JustDied(Unit* killer) override
         {
             BossAI::JustDied(killer);
             summons.DespawnAll();
-            if (pInstance)
-            {
-                pInstance->SetData(BOSS_LOATHEB, DONE);
-            }
         }
 
         void UpdateAI(uint32 diff) override
@@ -161,11 +132,11 @@ public:
                     events.Repeat(20s);
                     break;
                 case EVENT_DEATHBLOOM:
-                    me->CastSpell(me, RAID_MODE(SPELL_DEATHBLOOM_10, SPELL_DEATHBLOOM_25), false);
+                    me->CastSpell(me, SPELL_DEATHBLOOM, false);
                     events.Repeat(30s);
                     break;
                 case EVENT_INEVITABLE_DOOM:
-                    me->CastSpell(me, RAID_MODE(SPELL_INEVITABLE_DOOM_10, SPELL_INEVITABLE_DOOM_25), false);
+                    me->CastSpell(me, SPELL_INEVITABLE_DOOM, false);
                     doomCounter++;
                     events.Repeat(doomCounter < 6 ? 30s : 15s);
                     break;

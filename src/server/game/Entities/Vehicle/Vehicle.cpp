@@ -16,6 +16,7 @@
  */
 
 #include "Vehicle.h"
+#include "AreaDefines.h"
 #include "BattlefieldWG.h"
 #include "Log.h"
 #include "MoveSplineInit.h"
@@ -159,7 +160,7 @@ void Vehicle::ApplyAllImmunities()
         //_me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_UNATTACKABLE, true);
         _me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SHIELD, true);
         _me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_IMMUNE_SHIELD, true);
-        if (_me->GetZoneId() == BATTLEFIELD_WG_ZONEID || _me->ToCreature()->GetSpawnId() || (_me->FindMap() && _me->FindMap()->Instanceable()))
+        if (_me->GetZoneId() == AREA_WINTERGRASP || _me->ToCreature()->GetSpawnId() || (_me->FindMap() && _me->FindMap()->Instanceable()))
             _me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_SCHOOL_ABSORB, true);
 
         // ... Resistance, Split damage, Change stats ...
@@ -422,7 +423,9 @@ bool Vehicle::AddPassenger(Unit* unit, int8 seatId)
     if (_me->IsInWorld())
     {
         unit->SendClearTarget();                                // SMSG_BREAK_TARGET
-        unit->SetControlled(true, UNIT_STATE_ROOT);              // SMSG_FORCE_ROOT - In some cases we send SMSG_SPLINE_MOVE_ROOT here (for creatures)
+        unit->SetControlled(true, UNIT_STATE_ROOT);             // SMSG_FORCE_ROOT - In some cases we send SMSG_SPLINE_MOVE_ROOT here (for creatures)
+        if (unit->IsPlayer())
+            unit->ToPlayer()->SetExpectingChangeTransport(true);
         // also adds MOVEMENTFLAG_ROOT
         Movement::MoveSplineInit init(unit);
         init.DisableTransportPathTransformations();

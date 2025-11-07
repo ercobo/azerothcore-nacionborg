@@ -15,18 +15,6 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ScriptData
-SDName: Darkshore
-SD%Complete: 100
-SDComment: Quest support: 731, 2078, 5321
-SDCategory: Darkshore
-EndScriptData */
-
-/* ContentData
-npc_kerlonian
-npc_prospector_remtravel
-EndContentData */
-
 #include "CreatureScript.h"
 #include "Player.h"
 #include "ScriptedCreature.h"
@@ -35,7 +23,6 @@ EndContentData */
 #include "ScriptedGossip.h"
 #include "SpellInfo.h"
 
-// Ours
 enum murkdeep
 {
     NPC_GREYMIST_HUNTER      = 2206,
@@ -159,7 +146,6 @@ public:
     };
 };
 
-// Theirs
 /*####
 # npc_kerlonian
 ####*/
@@ -411,7 +397,10 @@ public:
         if (quest->GetQuestId() == QUEST_ABSENT_MINDED_PT2)
         {
             if (npc_escortAI* pEscortAI = CAST_AI(npc_prospector_remtravel::npc_prospector_remtravelAI, creature->AI()))
-                pEscortAI->Start(false, false, player->GetGUID());
+            {
+                creature->SetWalk(true);
+                pEscortAI->Start(false, player->GetGUID());
+            }
 
             creature->SetFaction(FACTION_ESCORTEE_A_NEUTRAL_PASSIVE);
         }
@@ -477,7 +466,7 @@ public:
                             _events.Reset();
                             _events.ScheduleEvent(EVENT_CHECK_FOLLOWING, 1s);
                             player->KilledMonsterCredit(NPC_CAPTURED_RABID_THISTLE_BEAR);
-                            me->DespawnOrUnsummon(240000);
+                            me->DespawnOrUnsummon(240s);
                         }
                     }
                 }
@@ -566,7 +555,7 @@ public:
             }
         }
 
-        void SetGUID(ObjectGuid /*guid*/, int32 type) override
+        void SetGUID(ObjectGuid const& /*guid*/, int32 type) override
         {
             if (type == GUID_SCRIPT_INVOKER && _scriptRunning == false)
             {
@@ -643,12 +632,9 @@ public:
 
 void AddSC_darkshore()
 {
-    // Ours
     new npc_murkdeep();
     new npc_rabid_thistle_bear();
     new npc_tharnarian();
-
-    // Theirs
     new npc_kerlonian();
     new npc_prospector_remtravel();
 }

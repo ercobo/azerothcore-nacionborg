@@ -15,17 +15,6 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ScriptData
-SDName: Arathi Highlands
-SD%Complete: 100
-SDComment: Quest support: 665
-SDCategory: Arathi Highlands
-EndScriptData */
-
-/* ContentData
-npc_professor_phizzlethorpe
-EndContentData */
-
 #include "CreatureScript.h"
 #include "Player.h"
 #include "ScriptedCreature.h"
@@ -89,7 +78,7 @@ public:
                     break;
                 case 11:
                     Talk(SAY_PROGRESS_6, player);
-                    SetRun();
+                    me->SetWalk(false);
                     break;
                 case 19:
                     Talk(SAY_PROGRESS_7, player);
@@ -117,7 +106,8 @@ public:
             if (quest->GetQuestId() == QUEST_SUNKEN_TREASURE)
             {
                 Talk(SAY_PROGRESS_1, player);
-                npc_escortAI::Start(false, false, player->GetGUID(), quest);
+                me->SetWalk(true);
+                Start(false, player->GetGUID(), quest);
                 me->SetFaction(FACTION_ESCORTEE_N_NEUTRAL_PASSIVE);
             }
         }

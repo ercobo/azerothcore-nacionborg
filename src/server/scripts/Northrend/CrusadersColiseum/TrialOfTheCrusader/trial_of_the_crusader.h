@@ -351,8 +351,7 @@ enum EventSpells
     SPELL_JORMUNGAR_ACHIEV                          = 68523,
     SPELL_FACTION_CHAMPIONS_KILL_CREDIT             = 68184,
     SPELL_RESILIENCE_WILL_FIX_IT_CREDIT             = 68620,
-    SPELL_TRAITOR_KING_10                           = 68186,
-    SPELL_TRAITOR_KING_25                           = 68515,
+    SPELL_TRAITOR_KING                              = 68186,
     SPELL_PORTAL_TO_DALARAN                         = 53142,
 };
 
@@ -377,12 +376,6 @@ enum eAchievementCriteria
     ACHIEV_CRITERIA_A_TRIBUTE_TO_IMMORTALITY_ALLIANCE       = 12359,
     ACHIEV_CRITERIA_A_TRIBUTE_TO_DEDICATED_INSANITY         = 12360,
     ACHIEV_CRITERIA_REALM_FIRST_GRAND_CRUSADER              = 12350,
-};
-
-enum euiWorldStates
-{
-    UPDATE_STATE_UI_SHOW                                    = 4390,
-    UPDATE_STATE_UI_COUNT                                   = 4389,
 };
 
 const uint32 dIIc = 405;

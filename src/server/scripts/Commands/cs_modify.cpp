@@ -15,13 +15,6 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ScriptData
-Name: modify_commandscript
-%Complete: 100
-Comment: All modify related commands
-Category: commandscripts
-EndScriptData */
-
 #include "Chat.h"
 #include "CommandScript.h"
 #include "ObjectMgr.h"
@@ -335,7 +328,7 @@ public:
         data << uint8(op);
         data << uint16(val);
         data << uint16(mark ? *mark : 65535);
-        target->GetSession()->SendPacket(&data);
+        target->SendDirectMessage(&data);
 
         return true;
     }
@@ -424,10 +417,10 @@ public:
         if (CheckModifySpeed(handler, target, allSpeed, 0.1f, 50.0f))
         {
             NotifyModification(handler, target, LANG_YOU_CHANGE_ASPEED, LANG_YOURS_ASPEED_CHANGED, allSpeed);
-            target->SetSpeed(MOVE_WALK, allSpeed);
-            target->SetSpeed(MOVE_RUN, allSpeed);
-            target->SetSpeed(MOVE_SWIM, allSpeed);
-            target->SetSpeed(MOVE_FLIGHT, allSpeed);
+            target->SetSpeed(MOVE_WALK, allSpeed, true);
+            target->SetSpeed(MOVE_RUN, allSpeed, true);
+            target->SetSpeed(MOVE_SWIM, allSpeed, true);
+            target->SetSpeed(MOVE_FLIGHT, allSpeed, true);
             return true;
         }
 

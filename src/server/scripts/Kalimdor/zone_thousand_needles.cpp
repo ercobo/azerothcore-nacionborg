@@ -22,20 +22,6 @@
 #include "ScriptedGossip.h"
 #include "SpellScript.h"
 #include "SpellScriptLoader.h"
-/* ScriptData
-SDName: Thousand Needles
-SD%Complete: 100
-SDComment: Support for Quest: 1950, 4770, 4904, 4966, 5151.
-SDCategory: Thousand Needles
-EndScriptData */
-
-/* ContentData
-npc_lakota_windsong
-npc_swiftmountain
-npc_plucky
-npc_enraged_panther
-go_panther_cage
-EndContentData */
 
 /*######
 # npc_lakota_windsong
@@ -80,7 +66,10 @@ public:
             creature->SetFaction(FACTION_ESCORTEE_H_NEUTRAL_ACTIVE); //guessed
 
             if (npc_lakota_windsongAI* pEscortAI = CAST_AI(npc_lakota_windsong::npc_lakota_windsongAI, creature->AI()))
-                pEscortAI->Start(false, false, player->GetGUID(), quest);
+            {
+                creature->SetWalk(true);
+                pEscortAI->Start(false, player->GetGUID(), quest);
+            }
         }
         return true;
     }
@@ -162,7 +151,10 @@ public:
             creature->SetFaction(FACTION_ESCORTEE_H_NEUTRAL_ACTIVE); // guessed
 
             if (npc_paoka_swiftmountainAI* pEscortAI = CAST_AI(npc_paoka_swiftmountain::npc_paoka_swiftmountainAI, creature->AI()))
-                pEscortAI->Start(false, false, player->GetGUID(), quest);
+            {
+                creature->SetWalk(true);
+                pEscortAI->Start(false, player->GetGUID(), quest);
+            }
         }
         return true;
     }

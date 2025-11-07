@@ -64,6 +64,11 @@ struct Position
         return !(operator==(a));
     }
 
+    inline bool operator!=(Position const& a) const
+    {
+        return !(operator==(a));
+    }
+
     operator G3D::Vector3() const
     {
         return { m_positionX, m_positionY, m_positionZ };
@@ -226,6 +231,7 @@ struct Position
     [[nodiscard]] bool IsWithinBox(const Position& center, float xradius, float yradius, float zradius) const;
     bool HasInArc(float arcangle, const Position* pos, float targetRadius = 0.0f) const;
     bool HasInLine(Position const* pos, float width) const;
+    bool HasInLine(Position const* pos, float objSize, float width) const;
     [[nodiscard]] std::string ToString() const;
 
     // modulos a radian orientation to the range of 0..2PI

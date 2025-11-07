@@ -99,6 +99,27 @@ enum ShapeshiftForm
     FORM_SPIRITOFREDEMPTION             = 0x20
 };
 
+enum ShapeshiftFlags
+{
+    SHAPESHIFT_FLAG_STANCE                          = 0x00000001,   // Form allows various player activities, which normally cause "You can't X while shapeshifted." errors (npc/go interaction, item use, etc)
+    SHAPESHIFT_FLAG_NOT_TOGGLEABLE                  = 0x00000002,   // NYI
+    SHAPESHIFT_FLAG_PERSIST_ON_DEATH                = 0x00000004,   // NYI
+    SHAPESHIFT_FLAG_CAN_NPC_INTERACT                = 0x00000008,   // Form unconditionally allows talking to NPCs while shapeshifted (even if other activities are disabled)
+    SHAPESHIFT_FLAG_DONT_USE_WEAPON                 = 0x00000010,   // NYI
+    SHAPESHIFT_FLAG_AGILITY_ATTACK_BONUS            = 0x00000020,   // Druid Cat form
+    SHAPESHIFT_FLAG_CAN_USE_EQUIPPED_ITEMS          = 0x00000040,   // NYI
+    SHAPESHIFT_FLAG_CAN_USE_ITEMS                   = 0x00000080,   // NYI
+    SHAPESHIFT_FLAG_DONT_AUTO_UNSHIFT               = 0x00000100,   // Handled at client side
+    SHAPESHIFT_FLAG_CONSIDERED_DEAD                 = 0x00000200,   // NYI
+    SHAPESHIFT_FLAG_CAN_ONLY_CAST_SHAPESHIFT_SPELLS = 0x00000400,   // NYI
+    SHAPESHIFT_FLAG_STANCE_CANCEL_AT_FLIGHTMASTER   = 0x00000800,   // NYI
+    SHAPESHIFT_FLAG_NO_EMOTE_SOUNDS                 = 0x00001000,   // NYI
+    SHAPESHIFT_FLAG_NO_TRIGGER_TELEPORT             = 0x00002000,   // NYI
+    SHAPESHIFT_FLAG_CANNOT_CHANGE_EQUIPPED_ITEMS    = 0x00004000,   // NYI
+    SHAPESHIFT_FLAG_RESUMMON_PETS_ON_UNSHIFT        = 0x00008000,   // NYI
+    SHAPESHIFT_FLAG_CANNOT_USE_GAME_OBJECTS         = 0x00010000,   // NYI
+};
+
 // low byte (0 from 0..3) of UNIT_FIELD_BYTES_2
 enum SheathState
 {
@@ -140,7 +161,7 @@ enum UnitTypeMask
     UNIT_MASK_VEHICLE                   = 0x00000020,
     UNIT_MASK_PUPPET                    = 0x00000040,
     UNIT_MASK_HUNTER_PET                = 0x00000080,
-    UNIT_MASK_CONTROLABLE_GUARDIAN      = 0x00000100,
+    UNIT_MASK_CONTROLLABLE_GUARDIAN     = 0x00000100,
     UNIT_MASK_ACCESSORY                 = 0x00000200
 };
 
@@ -175,6 +196,10 @@ enum UnitState
     UNIT_STATE_FOLLOW_MOVE              = 0x08000000,
     UNIT_STATE_IGNORE_PATHFINDING       = 0x10000000,       // do not use pathfinding in any MovementGenerator
     UNIT_STATE_NO_ENVIRONMENT_UPD       = 0x20000000,
+
+    // serverside region
+    UNIT_STATE_NO_COMBAT_MOVEMENT       = 0x40000000,       // should not be changed outside the core and should be placed at the end
+    UNIT_STATE_LOGOUT_TIMER             = 0x80000000,       // Unit is logging out
 
     UNIT_STATE_ALL_STATE_SUPPORTED = UNIT_STATE_DIED | UNIT_STATE_MELEE_ATTACKING | UNIT_STATE_STUNNED | UNIT_STATE_ROAMING | UNIT_STATE_CHASE
     | UNIT_STATE_FLEEING | UNIT_STATE_IN_FLIGHT | UNIT_STATE_FOLLOW | UNIT_STATE_ROOT | UNIT_STATE_CONFUSED
@@ -388,6 +413,8 @@ enum MovementFlags
     /// @todo if needed: add more flags to this masks that are exclusive to players
     MOVEMENTFLAG_MASK_PLAYER_ONLY =
     MOVEMENTFLAG_FLYING,
+
+    MOVEMENTFLAG_MASK_MOVING_OR_TURN = MOVEMENTFLAG_MASK_MOVING | MOVEMENTFLAG_MASK_TURNING,
 
     /// Movement flags that have change status opcodes associated for players
     MOVEMENTFLAG_MASK_HAS_PLAYER_STATUS_OPCODE = MOVEMENTFLAG_DISABLE_GRAVITY | MOVEMENTFLAG_ROOT |

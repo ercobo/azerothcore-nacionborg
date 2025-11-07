@@ -21,17 +21,6 @@
 #include "ScriptedCreature.h"
 #include "ScriptedEscortAI.h"
 #include "SpellInfo.h"
-/* ScriptData
-SDName: Nagrand
-SD%Complete: 90
-SDComment: Quest support: 9868, 9874, 10085. TextId's unknown for altruis_the_sufferer and greatmother_geyah (npc_text)
-SDCategory: Nagrand
-EndScriptData */
-
-/* ContentData
-npc_maghar_captive
-npc_creditmarker_visit_with_ancestors
-EndContentData */
 
 /*#####
 ## npc_maghar_captive
@@ -76,7 +65,8 @@ public:
             {
                 creature->SetStandState(UNIT_STAND_STATE_STAND);
                 creature->SetFaction(FACTION_ESCORTEE_H_NEUTRAL_ACTIVE);
-                EscortAI->Start(true, false, player->GetGUID(), quest);
+                creature->SetWalk(true);
+                EscortAI->Start(true, player->GetGUID(), quest);
                 creature->AI()->Talk(SAY_MAG_START);
 
                 creature->SummonCreature(NPC_MURK_RAIDER, m_afAmbushA[0] + 2.5f, m_afAmbushA[1] - 2.5f, m_afAmbushA[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
@@ -144,7 +134,7 @@ public:
                     if (Player* player = GetPlayerForEscort())
                         player->GroupEventHappens(QUEST_TOTEM_KARDASH_H, me);
 
-                    SetRun();
+                    me->SetWalk(false);
                     break;
             }
         }
@@ -314,10 +304,11 @@ public:
         uint32 HealTimer;
         uint32 FrostShockTimer;
 
-        void SetGUID(ObjectGuid guid, int32  /*questId*/) override
+        void SetGUID(ObjectGuid const& guid, int32  /*questId*/) override
         {
             me->SetStandState(UNIT_STAND_STATE_STAND);
-            Start(true, false, guid);
+            me->SetWalk(true);
+            Start(true, guid);
             Talk(SAY_KUR_START);
 
             me->SummonCreature(NPC_KUR_MURK_RAIDER, kurenaiAmbushA[0] + 2.5f, kurenaiAmbushA[1] - 2.5f, kurenaiAmbushA[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 50000);
@@ -372,7 +363,7 @@ public:
                         if (Player* player = GetPlayerForEscort())
                             player->GroupEventHappens(QUEST_TOTEM_KARDASH_A, me);
 
-                        SetRun();
+                        me->SetWalk(false);
                         break;
                     }
             }
@@ -475,7 +466,7 @@ public:
             player->KilledMonsterCredit(NPC_MAGHAR_PRISONER);
 
             prisoner->AI()->Talk(SAY_FREE, player);
-            prisoner->DespawnOrUnsummon(6000);
+            prisoner->DespawnOrUnsummon(6s);
         }
 
         return true;

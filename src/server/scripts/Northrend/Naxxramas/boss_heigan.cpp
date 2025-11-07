@@ -34,8 +34,7 @@ enum Says
 enum Spells
 {
     SPELL_SPELL_DISRUPTION          = 29310,
-    SPELL_DECREPIT_FEVER_10         = 29998,
-    SPELL_DECREPIT_FEVER_25         = 55011,
+    SPELL_DECREPIT_FEVER            = 29998,
     SPELL_PLAGUE_CLOUD              = 29350,
     SPELL_TELEPORT_SELF             = 30211
 };
@@ -69,11 +68,8 @@ public:
     struct boss_heiganAI : public BossAI
     {
         explicit boss_heiganAI(Creature* c) : BossAI(c, BOSS_HEIGAN)
-        {
-            pInstance = me->GetInstanceScript();
-        }
+        {}
 
-        InstanceScript* pInstance;
         EventMap events;
         uint8 currentPhase{};
         uint8 currentSection{};
@@ -86,13 +82,6 @@ public:
             currentPhase = 0;
             currentSection = 3;
             moveRight = true;
-            if (pInstance)
-            {
-                if (GameObject* go = me->GetMap()->GetGameObject(pInstance->GetGuidData(DATA_HEIGAN_ENTER_GATE)))
-                {
-                    go->SetGoState(GO_STATE_ACTIVE);
-                }
-            }
         }
 
         void KilledUnit(Unit* who) override
@@ -101,10 +90,7 @@ public:
                 return;
 
             Talk(SAY_SLAY);
-            if (pInstance)
-            {
-                pInstance->SetData(DATA_IMMORTAL_FAIL, 0);
-            }
+            instance->StorePersistentData(PERSISTENT_DATA_IMMORTAL_FAIL, 1);
         }
 
         void JustDied(Unit*  killer) override
@@ -118,13 +104,6 @@ public:
             BossAI::JustEngagedWith(who);
             me->SetInCombatWithZone();
             Talk(SAY_AGGRO);
-            if (pInstance)
-            {
-                if (GameObject* go = me->GetMap()->GetGameObject(pInstance->GetGuidData(DATA_HEIGAN_ENTER_GATE)))
-                {
-                    go->SetGoState(GO_STATE_READY);
-                }
-            }
             StartFightPhase(PHASE_SLOW_DANCE);
         }
 
@@ -188,7 +167,7 @@ public:
                     events.Repeat(10s);
                     break;
                 case EVENT_DECEPIT_FEVER:
-                    me->CastSpell(me, RAID_MODE(SPELL_DECREPIT_FEVER_10, SPELL_DECREPIT_FEVER_25), false);
+                    me->CastSpell(me, SPELL_DECREPIT_FEVER, false);
                     events.Repeat(22s, 25s);
                     break;
                 case EVENT_PLAGUE_CLOUD:
@@ -206,41 +185,38 @@ public:
                     }
                     break;
                 case EVENT_ERUPT_SECTION:
-                    if (pInstance)
-                    {
-                        pInstance->SetData(DATA_HEIGAN_ERUPTION, currentSection);
-                        if (currentSection == 3)
-                        {
-                            moveRight = false;
-                        }
-                        else if (currentSection == 0)
-                        {
-                            moveRight = true;
-                        }
-                        moveRight ? currentSection++ : currentSection--;
-                    }
+                {
+                    instance->SetData(DATA_HEIGAN_ERUPTION, currentSection);
+                    if (currentSection == 3)
+                        moveRight = false;
+                    else if (currentSection == 0)
+                        moveRight = true;
+
+                    moveRight ? currentSection++ : currentSection--;
+
                     if (currentPhase == PHASE_SLOW_DANCE)
-                    {
                         Talk(SAY_TAUNT);
-                    }
+
                     events.Repeat(currentPhase == PHASE_SLOW_DANCE ? 10s : 4s);
                     break;
+                }
                 case EVENT_SAFETY_DANCE:
+                {
+                    Map::PlayerList const& pList = me->GetMap()->GetPlayers();
+                    for (auto const& itr : pList)
                     {
-                        Map::PlayerList const& pList = me->GetMap()->GetPlayers();
-                        for (auto const& itr : pList)
+                        if (IsInRoom(itr.GetSource()) && !itr.GetSource()->IsAlive())
                         {
-                            if (IsInRoom(itr.GetSource()) && !itr.GetSource()->IsAlive())
-                            {
-                                pInstance->SetData(DATA_DANCE_FAIL, 0);
-                                pInstance->SetData(DATA_IMMORTAL_FAIL, 0);
-                                return;
-                            }
+                            instance->SetData(DATA_DANCE_FAIL, 0);
+                            instance->StorePersistentData(PERSISTENT_DATA_IMMORTAL_FAIL, 1);
+                            return;
                         }
-                        events.Repeat(5s);
-                        return;
                     }
+                    events.Repeat(5s);
+                    return;
+                }
             }
+
             DoMeleeAttackIfReady();
         }
     };

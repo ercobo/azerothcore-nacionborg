@@ -15,17 +15,6 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ScriptData
-SDName: Hinterlands
-SD%Complete: 100
-SDComment: Quest support: 2742
-SDCategory: The Hinterlands
-EndScriptData */
-
-/* ContentData
-npc_rinji
-EndContentData */
-
 #include "CreatureScript.h"
 #include "Player.h"
 #include "ScriptedCreature.h"
@@ -143,7 +132,8 @@ public:
                 if (GameObject* go = me->FindNearestGameObject(GO_RINJI_CAGE, INTERACTION_DISTANCE))
                     go->UseDoorOrButton();
 
-                npc_escortAI::Start(false, false, player->GetGUID(), quest);
+                me->SetWalk(true);
+                Start(false, player->GetGUID(), quest);
             }
         }
 
@@ -167,7 +157,7 @@ public:
                 case 17:
                     Talk(SAY_RIN_COMPLETE, player);
                     player->GroupEventHappens(QUEST_RINJI_TRAPPED, me);
-                    SetRun();
+                    me->SetWalk(false);
                     postEventCount = 1;
                     break;
             }

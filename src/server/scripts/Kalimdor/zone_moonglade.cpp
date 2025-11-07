@@ -15,21 +15,6 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ScriptData
-SDName: Moonglade
-SD%Complete: 100
-SDComment: Quest support: 30, 272, 5929, 5930, 10965. Special Flight Paths for Druid class.
-SDCategory: Moonglade
-EndScriptData */
-
-/* ContentData
-npc_bunthen_plainswind
-npc_great_bear_spirit
-npc_silva_filnaveth
-npc_clintar_spirit
-npc_clintar_dreamwalker
-EndContentData */
-
 #include "Cell.h"
 #include "CreatureScript.h"
 #include "GridNotifiers.h"
@@ -348,7 +333,7 @@ public:
             std::list<Player*> playerOnQuestList;
             Acore::AnyPlayerInObjectRangeCheck checker(me, 5.0f);
             Acore::PlayerListSearcher<Acore::AnyPlayerInObjectRangeCheck> searcher(me, playerOnQuestList, checker);
-            Cell::VisitWorldObjects(me, searcher, 5.0f);
+            Cell::VisitObjects(me, searcher, 5.0f);
             for (std::list<Player*>::const_iterator itr = playerOnQuestList.begin(); itr != playerOnQuestList.end(); ++itr)
             {
                 // Check if found player target has active quest
@@ -399,7 +384,8 @@ public:
                     AddWaypoint(i, Clintar_spirit_WP[i][0], Clintar_spirit_WP[i][1], Clintar_spirit_WP[i][2], (uint32)Clintar_spirit_WP[i][4]);
                 }
                 PlayerGUID = player->GetGUID();
-                Start(true, false, PlayerGUID);
+                me->SetWalk(true);
+                Start(true, PlayerGUID);
             }
             return;
         }
